@@ -914,14 +914,15 @@ class Compound(Node, Registered):
 
 class Field(Annotated):
 
-    def __init__(self, name, typenode, readable, writable, bits=None,
-                 anonymous_node=None):
+    def __init__(self, name, typenode, readable, writable, nullable=False,
+                 bits=None, anonymous_node=None):
         Annotated.__init__(self)
         assert (typenode or anonymous_node)
         self.name = name
         self.type = typenode
         self.readable = readable
         self.writable = writable
+        self.nullable = nullable
         self.bits = bits
         self.anonymous_node = anonymous_node
         self.private = False

@@ -556,6 +556,7 @@ struct _RegressTestStructC
  * @field: (type RegressTestObj):
  * @list: (element-type RegressTestObj):
  * @garray: (element-type RegressTestObj):
+ * @string: (nullable):
  * @ref_count:
  */
 struct _RegressTestStructD
@@ -565,6 +566,7 @@ struct _RegressTestStructD
   gpointer             field;
   GList               *list;
   GPtrArray           *garray;
+  gchar               *string;
 };
 
 /* This one has an array of anonymous unions, inspired by GValue */
@@ -743,7 +745,7 @@ typedef struct _RegressTestObjClass     RegressTestObjClass;
 
 /**
  * RegressTestObj:
- * @bare: (allow-none):
+ * @bare:
  */
 struct _RegressTestObj
 {

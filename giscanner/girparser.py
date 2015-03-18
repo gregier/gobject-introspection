@@ -541,6 +541,7 @@ class GIRParser(object):
                           type_node,
                           node.attrib.get('readable') != '0',
                           node.attrib.get('writable') == '1',
+                          node.attrib.get('nullable') == '1',
                           node.attrib.get('bits'),
                           anonymous_node=anonymous_node)
         field.private = node.attrib.get('private') == '1'

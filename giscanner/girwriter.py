@@ -583,6 +583,8 @@ class GIRWriter(XMLWriter):
                 attrs.append(('readable', '0'))
             if field.writable:
                 attrs.append(('writable', '1'))
+            if field.nullable:
+                attrs.append(('nullable', '1'))
             if field.bits:
                 attrs.append(('bits', str(field.bits)))
             if field.private:

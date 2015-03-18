@@ -769,6 +769,9 @@ class MainTransformer(object):
         except AttributeError as ex:
             print ex
 
+        if ANN_NULLABLE in tag.annotations:
+            field.nullable = True
+
     def _apply_annotations_property(self, parent, prop):
         prefix = self._get_annotation_name(parent)
         block = self._blocks.get('%s:%s' % (prefix, prop.name))

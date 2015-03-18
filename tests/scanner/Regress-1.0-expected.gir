@@ -3989,6 +3989,9 @@ the introspection client langage.</doc>
           <type name="TestObj"/>
         </array>
       </field>
+      <field name="string" writable="1" nullable="1">
+        <type name="utf8" c:type="gchar*"/>
+      </field>
     </record>
     <record name="TestStructE" c:type="RegressTestStructE">
       <field name="some_type" writable="1">
