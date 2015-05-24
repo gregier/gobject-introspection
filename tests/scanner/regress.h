@@ -1025,6 +1025,7 @@ regress_test_fundamental_sub_object_new (const char *data);
 typedef void (*RegressTestSimpleCallback) (void);
 typedef int (*RegressTestCallback) (void);
 typedef int (*RegressTestCallbackUserData) (gpointer user_data);
+typedef int (*RegressTestCallbackData) (gpointer ignore, gpointer data);
 /**
  * RegressTestCallbackHashtable:
  * @data: (element-type utf8 gint): a hash table; will be modified
@@ -1075,6 +1076,11 @@ int regress_test_array_inout_callback (RegressTestCallbackArrayInOut callback);
 
 _GI_TEST_EXTERN
 int regress_test_callback_user_data (RegressTestCallbackUserData callback,
+                             gpointer user_data);
+
+_GI_TEST_EXTERN
+int regress_test_callback_data (RegressTestCallbackData callback,
+                             gpointer ignore,
                              gpointer user_data);
 
 _GI_TEST_EXTERN

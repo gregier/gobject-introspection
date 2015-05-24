@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<page id="Regress.FooCallback"
+<page id="Regress.TestCallbackData"
       type="topic"
       style="callback"
       xmlns="http://projectmallard.org/1.0/"
@@ -8,20 +8,21 @@
   <info>
     <link xref="index" group="callback" type="guide"/>
   </info>
-  <title>Regress.FooCallback</title>
-  <synopsis><code mime="text/x-gjs">
-function onFooCallback(regress_foo: <link xref="Regress.FooObject">Regress.FooObject</link>, b: Boolean): Boolean {
-}
+  <title>Regress.TestCallbackData</title>
+  <synopsis><code mime="text/x-python">
+@accepts(gpointer, gpointer)
+@returns(int)
+def on_TestCallbackData(ignore, data):
   </code></synopsis>
 
 
 <terms>
 <item>
-<title><code>regress_foo</code></title>
+<title><code>ignore</code></title>
 
 </item>
 <item>
-<title><code>b</code></title>
+<title><code>data</code></title>
 
 </item>
 <item>

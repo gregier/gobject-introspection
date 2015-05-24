@@ -3438,6 +3438,21 @@ regress_test_callback_user_data (RegressTestCallbackUserData callback,
   return callback(user_data);
 }
 
+/**
+ * regress_test_callback_data:
+ * @callback: (scope call):
+ *
+ * Call - callback parameter persists for the duration of the method
+ * call and can be released on return.
+ **/
+int
+regress_test_callback_data (RegressTestCallbackData callback,
+                         gpointer ignore,
+                         gpointer user_data)
+{
+  return callback(ignore, user_data);
+}
+
 static GSList *notified_callbacks = NULL;
 
 /**

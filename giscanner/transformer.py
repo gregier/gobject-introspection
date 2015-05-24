@@ -867,6 +867,13 @@ raise ValueError."""
             if (param.type.target_fundamental == 'gpointer' and param.argname == 'user_data'):
                 param.closure_name = param.argname
 
+        # Fallback to the first 'data' arg if a closure was not specified or found
+        if all(param.closure_name is None for param in parameters):
+            for param in reversed(parameters):
+                if (param.type.target_fundamental == 'gpointer' and param.argname == 'data'):
+                    param.closure_name = param.argname
+                    break
+
         if member:
             name = symbol.ident
         elif symbol.ident.find('_') > 0:
