@@ -862,11 +862,6 @@ raise ValueError."""
         parameters = list(self._create_parameters(symbol, symbol.base_type.base_type))
         retval = self._create_return(symbol.base_type.base_type.base_type)
 
-        # Mark the 'user_data' arguments
-        for i, param in enumerate(parameters):
-            if (param.type.target_fundamental == 'gpointer' and param.argname == 'user_data'):
-                param.closure_name = param.argname
-
         if member:
             name = symbol.ident
         elif symbol.ident.find('_') > 0:

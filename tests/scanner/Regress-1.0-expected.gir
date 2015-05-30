@@ -1051,7 +1051,7 @@ it says it's pointer but it's actually a string.</doc>
         <parameter name="b" transfer-ownership="none">
           <type name="gboolean" c:type="gboolean"/>
         </parameter>
-        <parameter name="data" transfer-ownership="none">
+        <parameter name="data" transfer-ownership="none" closure="2">
           <type name="gpointer" c:type="gpointer"/>
         </parameter>
       </parameters>
@@ -1797,7 +1797,7 @@ exposed to language bindings.</doc>
                      closure="1">
             <type name="GObject.Callback" c:type="GCallback"/>
           </parameter>
-          <parameter name="user_data" transfer-ownership="none" closure="1">
+          <parameter name="user_data" transfer-ownership="none">
             <type name="gpointer" c:type="gpointer"/>
           </parameter>
         </parameters>
@@ -1882,7 +1882,7 @@ exposed to language bindings.</doc>
                        closure="2">
               <type name="GObject.Callback" c:type="GCallback"/>
             </parameter>
-            <parameter name="user_data" transfer-ownership="none" closure="2">
+            <parameter name="user_data" transfer-ownership="none">
               <type name="gpointer" c:type="gpointer"/>
             </parameter>
           </parameters>
@@ -2332,6 +2332,19 @@ use it should be.</doc>
                    caller-allocates="0"
                    transfer-ownership="none">
           <type name="gint" c:type="int*"/>
+        </parameter>
+      </parameters>
+    </callback>
+    <callback name="TestCallbackData" c:type="RegressTestCallbackData">
+      <return-value transfer-ownership="none">
+        <type name="gint" c:type="int"/>
+      </return-value>
+      <parameters>
+        <parameter name="ignore" transfer-ownership="none">
+          <type name="gpointer" c:type="gpointer"/>
+        </parameter>
+        <parameter name="data" transfer-ownership="none" closure="1">
+          <type name="gpointer" c:type="gpointer"/>
         </parameter>
       </parameters>
     </callback>
@@ -5329,6 +5342,28 @@ libgnome-keyring.</doc>
                 c:type="RegressTestCallbackUserData"/>
         </parameter>
         <parameter name="user_data" transfer-ownership="none">
+          <type name="gpointer" c:type="gpointer"/>
+        </parameter>
+      </parameters>
+    </function>
+    <function name="test_callback_data"
+              c:identifier="regress_test_callback_data">
+      <doc xml:space="preserve">Call - callback parameter persists for the duration of the method
+call and can be released on return.</doc>
+      <return-value transfer-ownership="none">
+        <type name="gint" c:type="int"/>
+      </return-value>
+      <parameters>
+        <parameter name="callback"
+                   transfer-ownership="none"
+                   scope="call"
+                   closure="2">
+          <type name="TestCallbackData" c:type="RegressTestCallbackData"/>
+        </parameter>
+        <parameter name="ignore" transfer-ownership="none">
+          <type name="gpointer" c:type="gpointer"/>
+        </parameter>
+        <parameter name="data" transfer-ownership="none">
           <type name="gpointer" c:type="gpointer"/>
         </parameter>
       </parameters>

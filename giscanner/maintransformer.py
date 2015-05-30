@@ -1319,6 +1319,10 @@ method or constructor of some type."""
         if isinstance(node, ast.Callable):
             self._pass3_callable_callbacks(node)
             self._pass3_callable_throws(node)
+
+        if isinstance(node, ast.Callback):
+            self._pass3_callback_closure(node)
+
         return True
 
     def _pass3_callable_callbacks(self, node):
@@ -1368,3 +1372,30 @@ method or constructor of some type."""
         if last_param.type.ctype == 'GError**':
             node.parameters.pop()
             node.throws = True
+
+    def _pass3_callback_closure(self, node):
+        """Check to see if we need to specify the closure argument."""
+
+        params = node.parameters
+
+        # Don't check when a closure has
+        # already been specified for the callback
+        for param in params:
+            if param.closure_name == param.argname:
+                return
+
+        # Avoid setting the parameter as a closure when
+        # it has already been taken by a callback parameter.
+        specified = set(param.closure_name for param in params
+                        if param.closure_name is not None)
+
+        # Look for the last parameter which
+        # has the correct direction, type and name
+        for param in reversed(params):
+            if (param.direction != ast.PARAM_DIRECTION_OUT and
+                    param.direction != ast.PARAM_DIRECTION_INOUT and
+                    param.type.target_fundamental == 'gpointer' and
+                    param.argname not in specified and
+                    param.argname.endswith('data')):
+                param.closure_name = param.argname
+                return
