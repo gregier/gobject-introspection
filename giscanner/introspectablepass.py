@@ -70,10 +70,8 @@ class IntrospectablePass(object):
         is_parameter = isinstance(node, ast.Parameter)
         assert is_return or is_parameter
 
-        if node.type.target_giname is not None:
-            target = self._transformer.lookup_typenode(node.type)
-        else:
-            target = None
+        target = self._transformer.lookup_typenode(node.type)
+        target = self._transformer.resolve_aliases(target)
 
         if node.skip:
             return
@@ -96,7 +94,7 @@ class IntrospectablePass(object):
 
         if (is_parameter
         and isinstance(target, ast.Callback)
-        and node.type.target_giname not in ('GLib.DestroyNotify', 'Gio.AsyncReadyCallback')
+        and target.gi_name not in ('GLib.DestroyNotify', 'Gio.AsyncReadyCallback')
         and node.scope is None):
             self._parameter_warning(
                 parent,

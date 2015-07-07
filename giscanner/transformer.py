@@ -973,8 +973,10 @@ Note that type resolution may not succeed."""
         while isinstance(typenode, ast.Alias):
             if typenode.target.target_giname is not None:
                 typenode = self.lookup_giname(typenode.target.target_giname)
-            elif typenode.target.target_fundamental is not None:
-                typenode = ast.type_names[typenode.target.target_fundamental]
             else:
-                break
+                # This can happen when target_fundamental is "<array>"
+                try:
+                    typenode = ast.type_names[typenode.target.target_fundamental]
+                except KeyError:
+                    break
         return typenode

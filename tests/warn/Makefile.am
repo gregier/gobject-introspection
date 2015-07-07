@@ -2,6 +2,7 @@ include $(top_srcdir)/common.mk
 
 TESTS = \
 	annotationparser.h \
+	callback-invalid-destroy.h \
 	callback-invalid-scope.h \
 	callback-missing-scope.h \
 	invalid-array.h \
