@@ -705,10 +705,16 @@ class MainTransformer(object):
         self._apply_annotations_param_ret_common(parent, param, tag)
 
     def _apply_annotations_return(self, parent, return_, block):
+        tag = None
+
         if block:
             tag = block.tags.get(TAG_RETURNS)
-        else:
-            tag = None
+
+            if tag is not None and return_.type == ast.TYPE_NONE:
+                message.warn('%s: invalid return annotation' % (block.name,),
+                             tag.position)
+                tag = None
+
         self._apply_annotations_param_ret_common(parent, return_, tag)
 
     def _apply_annotations_params(self, parent, params, block):
