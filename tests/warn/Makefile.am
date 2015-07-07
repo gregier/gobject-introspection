@@ -5,12 +5,15 @@ TESTS = \
 	callback-invalid-destroy.h \
 	callback-invalid-scope.h \
 	callback-missing-scope.h \
+	invalid-allow-none.h \
 	invalid-array.h \
 	invalid-closure.h \
 	invalid-constructor.h \
 	invalid-element-type.h \
 	invalid-method.h \
+	invalid-nullable.h \
 	invalid-option.h \
+	invalid-optional.h \
 	invalid-out.h \
 	invalid-return.h \
 	invalid-transfer.h \
