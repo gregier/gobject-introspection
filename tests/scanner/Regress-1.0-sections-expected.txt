@@ -176,6 +176,7 @@ regress_test_timet
 regress_test_torture_signature_0
 regress_test_torture_signature_1
 regress_test_torture_signature_2
+regress_test_two_callbacks_one_destroy_notify
 regress_test_uint
 regress_test_uint16
 regress_test_uint32

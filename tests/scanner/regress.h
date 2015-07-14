@@ -1111,6 +1111,12 @@ int regress_test_callback_destroy_notify_no_user_data (RegressTestCallbackUserDa
                                   GDestroyNotify notify);
 
 _GI_TEST_EXTERN
+int regress_test_two_callbacks_one_destroy_notify (RegressTestCallbackUserData callback1,
+                                  RegressTestCallbackUserData callback2,
+                                  gpointer user_data,
+                                  GDestroyNotify notify);
+
+_GI_TEST_EXTERN
 int regress_test_callback_thaw_notifications (void);
 
 

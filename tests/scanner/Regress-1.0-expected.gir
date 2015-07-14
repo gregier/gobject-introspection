@@ -6496,6 +6496,38 @@ https://bugzilla.gnome.org/show_bug.cgi?id=685399</doc>
         </parameter>
       </parameters>
     </function>
+    <function name="test_two_callbacks_one_destroy_notify"
+              c:identifier="regress_test_two_callbacks_one_destroy_notify">
+      <doc xml:space="preserve">Notified - callback persists until a DestroyNotify delegate
+is invoked.</doc>
+      <return-value transfer-ownership="none">
+        <type name="gint" c:type="int"/>
+      </return-value>
+      <parameters>
+        <parameter name="callback1"
+                   transfer-ownership="none"
+                   scope="notified"
+                   closure="2"
+                   destroy="3">
+          <type name="TestCallbackUserData"
+                c:type="RegressTestCallbackUserData"/>
+        </parameter>
+        <parameter name="callback2"
+                   transfer-ownership="none"
+                   scope="notified"
+                   closure="2"
+                   destroy="3">
+          <type name="TestCallbackUserData"
+                c:type="RegressTestCallbackUserData"/>
+        </parameter>
+        <parameter name="user_data" transfer-ownership="none">
+          <type name="gpointer" c:type="gpointer"/>
+        </parameter>
+        <parameter name="notify" transfer-ownership="none" scope="async">
+          <type name="GLib.DestroyNotify" c:type="GDestroyNotify"/>
+        </parameter>
+      </parameters>
+    </function>
     <function name="test_uint" c:identifier="regress_test_uint">
       <return-value transfer-ownership="none">
         <type name="guint" c:type="guint"/>

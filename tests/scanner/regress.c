@@ -3562,6 +3562,24 @@ regress_test_callback_destroy_notify_no_user_data (RegressTestCallbackUserData c
 }
 
 /**
+ * regress_test_two_callbacks_one_destroy_notify:
+ * @callback1: (scope notified) (destroy notify) (closure user_data):
+ * @callback2: (scope notified) (destroy notify) (closure user_data):
+ *
+ * Notified - callback persists until a DestroyNotify delegate
+ * is invoked.
+ **/
+int
+regress_test_two_callbacks_one_destroy_notify (RegressTestCallbackUserData callback1,
+                              RegressTestCallbackUserData callback2,
+                              gpointer user_data,
+                              GDestroyNotify notify)
+{
+  return regress_test_callback_destroy_notify(callback1, user_data, notify) +
+         regress_test_callback_destroy_notify(callback2, user_data, NULL);
+}
+
+/**
  * regress_test_callback_thaw_notifications:
  *
  * Invokes all callbacks installed by #test_callback_destroy_notify(),
