@@ -29,7 +29,15 @@ from .message import Position
 from .utils import to_underscores
 
 
-class Type(object):
+class Typed(object):
+    def __init__(self, ctype):
+        self.ctype = ctype
+
+    def __cmp__(self, other):
+        return cmp(self.ctype, other.ctype)
+
+
+class Type(Typed):
     """
     A Type can be either:
     * A reference to a node (target_giname)
@@ -50,7 +58,7 @@ class Type(object):
                  is_const=False,
                  origin_symbol=None,
                  complete_ctype=None):
-        self.ctype = ctype
+        Typed.__init__(self, ctype)
         self.gtype_name = gtype_name
         self.origin_symbol = origin_symbol
         if _target_unknown:
@@ -119,14 +127,15 @@ in contrast to the other create_type() functions."""
         return self.target_giname.split('.')[1]
 
     def __cmp__(self, other):
-        if self.target_fundamental:
-            return cmp(self.target_fundamental, other.target_fundamental)
-        elif self.target_giname:
-            return cmp(self.target_giname, other.target_giname)
-        elif self.target_foreign:
-            return cmp(self.target_foreign, other.target_foreign)
-        else:
-            return cmp(self.ctype, other.ctype)
+        if isinstance(other, Type):
+            if self.target_fundamental:
+                return cmp(self.target_fundamental, other.target_fundamental)
+            elif self.target_giname:
+                return cmp(self.target_giname, other.target_giname)
+            elif self.target_foreign:
+                return cmp(self.target_foreign, other.target_foreign)
+
+        return Typed.__cmp__(self, other)
 
     def is_equiv(self, typeval):
         """Return True if the specified types are compatible at
@@ -425,7 +434,7 @@ but adds it to things like ctypes, symbols, and type_names.
             for member in node.members:
                 member.namespace = self
                 self.symbols[member.symbol] = member
-        if hasattr(node, 'ctype'):
+        if isinstance(node, Typed):
             self.ctypes[node.ctype] = node
 
     def append(self, node, replace=False):
@@ -443,7 +452,7 @@ but adds it to things like ctypes, symbols, and type_names.
             del self.aliases[node.name]
         elif isinstance(node, Registered) and node.gtype_name is not None:
             del self.type_names[node.gtype_name]
-        if hasattr(node, 'ctype'):
+        if isinstance(node, Typed):
             del self.ctypes[node.ctype]
         if isinstance(node, Function):
             del self.symbols[node.symbol]
@@ -744,12 +753,12 @@ class Map(Type):
         return Map(self.key_type, self.value_type)
 
 
-class Alias(Node):
+class Alias(Node, Typed):
 
     def __init__(self, name, target, ctype=None):
         Node.__init__(self, name)
+        Typed.__init__(self, ctype)
         self.target = target
-        self.ctype = ctype
 
 
 class TypeContainer(Annotated):
@@ -799,7 +808,7 @@ class Return(TypeContainer):
         self.direction = PARAM_DIRECTION_OUT
 
 
-class Enum(Node, Registered):
+class Enum(Node, Registered, Typed):
 
     def __init__(self, name, ctype,
                  gtype_name=None,
@@ -808,8 +817,8 @@ class Enum(Node, Registered):
                  members=None):
         Node.__init__(self, name)
         Registered.__init__(self, gtype_name, get_type)
+        Typed.__init__(self, ctype)
         self.c_symbol_prefix = c_symbol_prefix
-        self.ctype = ctype
         self.members = members
         for member in members:
             member.parent = self
@@ -822,7 +831,7 @@ class Enum(Node, Registered):
             meth.walk(callback, chain)
 
 
-class Bitfield(Node, Registered):
+class Bitfield(Node, Registered, Typed):
 
     def __init__(self, name, ctype,
                  gtype_name=None,
@@ -831,7 +840,7 @@ class Bitfield(Node, Registered):
                  members=None):
         Node.__init__(self, name)
         Registered.__init__(self, gtype_name, get_type)
-        self.ctype = ctype
+        Typed.__init__(self, ctype)
         self.c_symbol_prefix = c_symbol_prefix
         self.members = members
         for member in members:
@@ -860,7 +869,7 @@ class Member(Annotated):
         return '%s(%r)' % (self.__class__.__name__, self.name)
 
 
-class Compound(Node, Registered):
+class Compound(Node, Registered, Typed):
     def __init__(self, name,
                  ctype=None,
                  gtype_name=None,
@@ -870,7 +879,7 @@ class Compound(Node, Registered):
                  tag_name=None):
         Node.__init__(self, name)
         Registered.__init__(self, gtype_name, get_type)
-        self.ctype = ctype
+        Typed.__init__(self, ctype)
         self.methods = []
         self.static_methods = []
         self.fields = []
@@ -1011,7 +1020,7 @@ class Signal(Callable):
         self.no_hooks = no_hooks
 
 
-class Class(Node, Registered):
+class Class(Node, Registered, Typed):
 
     def __init__(self, name, parent_type,
                  ctype=None,
@@ -1021,7 +1030,7 @@ class Class(Node, Registered):
                  is_abstract=False):
         Node.__init__(self, name)
         Registered.__init__(self, gtype_name, get_type)
-        self.ctype = ctype
+        Typed.__init__(self, ctype)
         self.c_symbol_prefix = c_symbol_prefix
         self.parent_type = parent_type
         self.fundamental = False
@@ -1062,7 +1071,7 @@ class Class(Node, Registered):
             prop.walk(callback, chain)
 
 
-class Interface(Node, Registered):
+class Interface(Node, Registered, Typed):
 
     def __init__(self, name, parent_type,
                  ctype=None,
@@ -1071,7 +1080,7 @@ class Interface(Node, Registered):
                  c_symbol_prefix=None):
         Node.__init__(self, name)
         Registered.__init__(self, gtype_name, get_type)
-        self.ctype = ctype
+        Typed.__init__(self, ctype)
         self.c_symbol_prefix = c_symbol_prefix
         self.parent_type = parent_type
         self.parent_chain = []
@@ -1101,13 +1110,13 @@ class Interface(Node, Registered):
             sig.walk(callback, chain)
 
 
-class Constant(Node):
+class Constant(Node, Typed):
 
     def __init__(self, name, value_type, value, ctype):
         Node.__init__(self, name)
+        Typed.__init__(self, ctype)
         self.value_type = value_type
         self.value = value
-        self.ctype = ctype
 
 
 class Property(Node):
@@ -1127,8 +1136,8 @@ class Property(Node):
         self.parent = None  # A Class or Interface
 
 
-class Callback(Callable):
+class Callback(Callable, Typed):
 
     def __init__(self, name, retval, parameters, throws, ctype=None):
         Callable.__init__(self, name, retval, parameters, throws)
-        self.ctype = ctype
+        Typed.__init__(self, ctype)
