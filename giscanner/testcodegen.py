@@ -18,7 +18,7 @@
 # Boston, MA 02111-1307, USA.
 #
 
-from StringIO import StringIO
+from cStringIO import StringIO
 from . import ast
 from .codegen import CCodeGenerator
 
@@ -72,8 +72,7 @@ class EverythingCodeGenerator(object):
                             ast.Return(ast.TYPE_NONE, transfer=ast.PARAM_TRANSFER_NONE),
                             [], False, self.gen.gen_symbol('nullfunc'))
         self.namespace.append(func)
-        body = "  return;\n"
-        self.gen.set_function_body(func, body)
+        self.gen.set_function_body(func, "  return;\n")
 
         # First pass, generate constant returns
         prefix = 'const return '
@@ -85,8 +84,7 @@ class EverythingCodeGenerator(object):
                                 [], False, sym)
             self.namespace.append(func)
             default = get_default_for_typeval(typeval)
-            body = "  return %s;\n" % (default, )
-            self.gen.set_function_body(func, body)
+            self.gen.set_function_body(func, "  return %s;\n" % (default, ))
 
         # Void return, one parameter
         prefix = 'oneparam '
@@ -114,7 +112,7 @@ class EverythingCodeGenerator(object):
                                 [ast.Parameter('arg0', typeval, transfer=ast.PARAM_TRANSFER_NONE,
                                                direction=ast.PARAM_DIRECTION_OUT)], False, sym)
             self.namespace.append(func)
-            body = StringIO('w')
+            body = StringIO()
             default = get_default_for_typeval(func.retval)
             body.write("  *arg0 = %s;\n" % (default, ))
             body.write("  return;\n")
@@ -128,12 +126,9 @@ class EverythingCodeGenerator(object):
             name = prefix + uscore_from_type(typeval)
             sym = self.gen.gen_symbol(name)
             func = ast.Function(name, ast.Return(typeval, transfer=ast.PARAM_TRANSFER_NONE),
-                            [ast.Parameter('arg0', typeval, transfer=ast.PARAM_TRANSFER_NONE,
-                                       direction=ast.PARAM_DIRECTION_IN)], False, sym)
+                                [ast.Parameter('arg0', typeval, transfer=ast.PARAM_TRANSFER_NONE,
+                                               direction=ast.PARAM_DIRECTION_IN)], False, sym)
             self.namespace.append(func)
-            body = StringIO('w')
-            default = get_default_for_typeval(func.retval)
-            body.write("  return arg0;\n")
-            self.gen.set_function_body(func, body.getvalue())
+            self.gen.set_function_body(func, "  return arg0;\n")
 
         self.gen.codegen()
