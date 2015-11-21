@@ -952,16 +952,6 @@ g_irepository_find_by_error_domain (GIRepository *repository,
   return NULL;
 }
 
-static void
-collect_namespaces (gpointer key,
-		    gpointer value,
-		    gpointer data)
-{
-  GList **list = data;
-
-  *list = g_list_append (*list, key);
-}
-
 /**
  * g_irepository_get_loaded_namespaces:
  * @repository: (allow-none): A #GIRepository or %NULL for the singleton
@@ -974,21 +964,26 @@ collect_namespaces (gpointer key,
 gchar **
 g_irepository_get_loaded_namespaces (GIRepository *repository)
 {
-  GList *l, *list = NULL;
+  guint i = 0;
   gchar **names;
-  gint i;
+  const gchar *name;
+  GHashTableIter iter;
 
   repository = get_repository (repository);
 
-  g_hash_table_foreach (repository->priv->typelibs, collect_namespaces, &list);
-  g_hash_table_foreach (repository->priv->lazy_typelibs, collect_namespaces, &list);
+  names = g_new (gchar *,
+                 g_hash_table_size (repository->priv->typelibs) +
+                 g_hash_table_size (repository->priv->lazy_typelibs) + 1);
 
-  names = g_malloc0 (sizeof (gchar *) * (g_list_length (list) + 1));
-  i = 0;
-  for (l = list; l; l = l->next)
-    names[i++] = g_strdup (l->data);
-  g_list_free (list);
+  g_hash_table_iter_init (&iter, repository->priv->typelibs);
+  while (g_hash_table_iter_next (&iter, (gpointer *) &name, NULL))
+    names[i++] = g_strdup (name);
 
+  g_hash_table_iter_init (&iter, repository->priv->lazy_typelibs);
+  while (g_hash_table_iter_next (&iter, (gpointer *) &name, NULL))
+    names[i++] = g_strdup (name);
+
+  names[i] = NULL;
   return names;
 }
 
