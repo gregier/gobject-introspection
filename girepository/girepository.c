@@ -551,10 +551,8 @@ g_irepository_get_dependencies (GIRepository *repository,
 				const char *namespace)
 {
   GITypelib *typelib;
-  GHashTable *transitive_dependencies;  /* set of owned utf8 */
-  GHashTableIter iter;
-  gchar *dependency;
-  GPtrArray *out;  /* owned utf8 elements */
+  GHashTable *transitive_dependencies;
+  gchar **dependencies;
 
   g_return_val_if_fail (namespace != NULL, NULL);
 
@@ -568,23 +566,11 @@ g_irepository_get_dependencies (GIRepository *repository,
   get_typelib_dependencies_transitive (repository, typelib,
                                        transitive_dependencies);
 
-  /* Convert to a string array. */
-  out = g_ptr_array_new_full (g_hash_table_size (transitive_dependencies),
-                              g_free);
-  g_hash_table_iter_init (&iter, transitive_dependencies);
-
-  while (g_hash_table_iter_next (&iter, (gpointer) &dependency, NULL))
-    {
-      g_ptr_array_add (out, dependency);
-      g_hash_table_iter_steal (&iter);
-    }
-
+  dependencies = (gchar **) g_hash_table_get_keys_as_array (transitive_dependencies,
+                                                            NULL);
   g_hash_table_unref (transitive_dependencies);
 
-  /* Add a NULL terminator. */
-  g_ptr_array_add (out, NULL);
-
-  return (gchar **) g_ptr_array_free (out, FALSE);
+  return dependencies;
 }
 
 /**
