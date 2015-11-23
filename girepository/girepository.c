@@ -875,28 +875,24 @@ g_irepository_find_by_name (GIRepository *repository,
 			   NULL, typelib, entry->offset);
 }
 
-typedef struct {
-  GIRepository *repository;
-  GQuark domain;
-
-  GITypelib *result_typelib;
-  DirEntry *result;
-} FindByErrorDomainData;
-
-static void
-find_by_error_domain_foreach (gpointer key,
-			      gpointer value,
-			      gpointer datap)
+static DirEntry *
+find_by_error_domain (GHashTable  *typelibs,
+                      GQuark       domain,
+                      GITypelib  **typelib)
 {
-  GITypelib *typelib = (GITypelib*)value;
-  FindByErrorDomainData *data = datap;
+  GHashTableIter iter;
+  DirEntry *entry;
 
-  if (data->result != NULL)
-    return;
+  g_hash_table_iter_init (&iter, typelibs);
+  while (g_hash_table_iter_next (&iter, NULL, (gpointer *)typelib))
+    {
+      entry = g_typelib_get_dir_entry_by_error_domain (*typelib, domain);
+      if (entry)
+        return entry;
+    }
 
-  data->result = g_typelib_get_dir_entry_by_error_domain (typelib, data->domain);
-  if (data->result)
-    data->result_typelib = typelib;
+  *typelib = NULL;
+  return NULL;
 }
 
 /**
@@ -918,8 +914,9 @@ GIEnumInfo *
 g_irepository_find_by_error_domain (GIRepository *repository,
 				    GQuark        domain)
 {
-  FindByErrorDomainData data;
   GIEnumInfo *cached;
+  DirEntry *entry;
+  GITypelib *typelib;
 
   repository = get_repository (repository);
 
@@ -929,20 +926,15 @@ g_irepository_find_by_error_domain (GIRepository *repository,
   if (cached != NULL)
     return g_base_info_ref ((GIBaseInfo *)cached);
 
-  data.repository = repository;
-  data.domain = domain;
-  data.result_typelib = NULL;
-  data.result = NULL;
+  entry = find_by_error_domain (repository->priv->typelibs, domain, &typelib);
+  if (entry == NULL)
+    entry = find_by_error_domain (repository->priv->lazy_typelibs, domain, &typelib);
 
-  g_hash_table_foreach (repository->priv->typelibs, find_by_error_domain_foreach, &data);
-  if (data.result == NULL)
-    g_hash_table_foreach (repository->priv->lazy_typelibs, find_by_error_domain_foreach, &data);
-
-  if (data.result != NULL)
+  if (entry != NULL)
     {
-      cached = _g_info_new_full (data.result->blob_type,
+      cached = _g_info_new_full (entry->blob_type,
 				 repository,
-				 NULL, data.result_typelib, data.result->offset);
+				 NULL, typelib, entry->offset);
 
       g_hash_table_insert (repository->priv->info_by_error_domain,
 			   GUINT_TO_POINTER (domain),
