@@ -131,69 +131,26 @@ _g_ir_module_fatal (GIrTypelibBuild  *build,
   va_end (args);
 }
 
-static void
-add_alias_foreach (gpointer key,
-		   gpointer value,
-		   gpointer data)
-{
-  GIrModule *module = data;
-
-  g_hash_table_replace (module->aliases, g_strdup (key), g_strdup (value));
-}
-
-static void
-add_disguised_structure_foreach (gpointer key,
-				 gpointer value,
-				 gpointer data)
-{
-  GIrModule *module = data;
-
-  g_hash_table_replace (module->disguised_structures, g_strdup (key), value);
-}
-
 void
 _g_ir_module_add_include_module (GIrModule  *module,
 				 GIrModule  *include_module)
 {
+  gpointer key, value;
+  GHashTableIter iter;
+
   module->include_modules = g_list_prepend (module->include_modules,
 					    include_module);
 
-  g_hash_table_foreach (include_module->aliases,
-			add_alias_foreach,
-			module);
+  g_hash_table_iter_init (&iter, include_module->aliases);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+    g_hash_table_replace (module->aliases, g_strdup (key), g_strdup (value));
 
-  g_hash_table_foreach (include_module->disguised_structures,
-			add_disguised_structure_foreach,
-			module);
+  g_hash_table_iter_init (&iter, include_module->disguised_structures);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+    g_hash_table_replace (module->disguised_structures, g_strdup (key), value);
 }
-
-struct AttributeWriteData
-{
-  guint count;
-  guchar *databuf;
-  GIrNode *node;
-  GHashTable *strings;
-  guint32 *offset;
-  guint32 *offset2;
-};
 
 static void
-write_attribute (gpointer key, gpointer value, gpointer datap)
-{
-  struct AttributeWriteData *data = datap;
-  guint32 old_offset = *(data->offset);
-  AttributeBlob *blob = (AttributeBlob*)&(data->databuf[old_offset]);
-
-  *(data->offset) += sizeof (AttributeBlob);
-
-  blob->offset = data->node->offset;
-  blob->name = _g_ir_write_string ((const char*) key, data->strings, data->databuf, data->offset2);
-  blob->value = _g_ir_write_string ((const char*) value, data->strings, data->databuf, data->offset2);
-
-  data->count++;
-}
-
-static guint
 write_attributes (GIrModule *module,
                    GIrNode   *node,
                    GHashTable *strings,
@@ -201,17 +158,20 @@ write_attributes (GIrModule *module,
                    guint32   *offset,
                    guint32   *offset2)
 {
-  struct AttributeWriteData wdata;
-  wdata.count = 0;
-  wdata.databuf = data;
-  wdata.node = node;
-  wdata.offset = offset;
-  wdata.offset2 = offset2;
-  wdata.strings = strings;
+  GHashTableIter iter;
+  const gchar *name, *value;
 
-  g_hash_table_foreach (node->attributes, write_attribute, &wdata);
+  g_hash_table_iter_init (&iter, node->attributes);
+  while (g_hash_table_iter_next (&iter, (gpointer *)&name, (gpointer *)&value))
+    {
+      AttributeBlob *blob = (AttributeBlob*)&(data[*offset]);
 
-  return wdata.count;
+      *offset += sizeof (AttributeBlob);
+
+      blob->offset = node->offset;
+      blob->name = _g_ir_write_string (name, strings, data, offset2);
+      blob->value = _g_ir_write_string (value, strings, data, offset2);
+    }
 }
 
 static gint

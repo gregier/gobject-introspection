@@ -560,18 +560,6 @@ _g_ir_node_get_size (GIrNode *node)
   return size;
 }
 
-static void
-add_attribute_size (gpointer key, gpointer value, gpointer data)
-{
-  const gchar *key_str = key;
-  const gchar *value_str = value;
-  gint *size_p = data;
-
-  *size_p += sizeof (AttributeBlob);
-  *size_p += ALIGN_VALUE (strlen (key_str) + 1, 4);
-  *size_p += ALIGN_VALUE (strlen (value_str) + 1, 4);
-}
-
 /* returns the full size of the blob including variable-size parts (including attributes) */
 static guint32
 _g_ir_node_get_full_size_internal (GIrNode *parent,
@@ -579,6 +567,8 @@ _g_ir_node_get_full_size_internal (GIrNode *parent,
 {
   GList *l;
   gint size, n;
+  GHashTableIter iter;
+  const gchar *key, *value;
 
   if (node == NULL && parent != NULL)
     g_error ("Caught NULL node, parent=%s", parent->name);
@@ -870,7 +860,13 @@ _g_ir_node_get_full_size_internal (GIrNode *parent,
 	   node->name ? "' " : "",
 	   node, _g_ir_node_type_to_string (node->type), size);
 
-  g_hash_table_foreach (node->attributes, add_attribute_size, &size);
+  g_hash_table_iter_init (&iter, node->attributes);
+  while (g_hash_table_iter_next (&iter, (gpointer *)&key, (gpointer *)&value))
+    {
+      size += sizeof (AttributeBlob);
+      size += ALIGN_VALUE (strlen (key) + 1, 4);
+      size += ALIGN_VALUE (strlen (value) + 1, 4);
+    }
 
   return size;
 }
